@@ -1,27 +1,48 @@
-import React, { useEffect, useState } from "react";
+import { animateScroll as scroll } from "react-scroll";
+import { deletePokemon } from "../services/deletePokemon";
+import { getPokemon } from "../services/getPokemon";
 
-export const Table = () => {
-  const [data, setData] = useState([]);
+export const Table = ({
+  data,
+  setPokemon,
+  setShowNewPanel,
+  setTitle,
+  setData,
+}) => {
+  const onClickEditar = (id) => {
+    getPokemon("", false, id).then((poke) => {
+      setPokemon(poke);
+    });
+    setTitle("Editar Pokemon");
+    setShowNewPanel(true);
+    scroll.scrollToBottom();
+  };
 
-  useEffect(() => {
-    fetch("https://bp-pokemons.herokuapp.com/?idAuthor=1")
-      .then((response) => response.json())
-      .then((data) => setData(data));
-  }, []);
+  const onClickDelete = (id) => {
+    //console.log("id", id);
+    deletePokemon(id)
+      .then((success) => {
+        setData(data.filter((pokemon) => pokemon.id !== id));
+        alert("Pokemon eliminado!");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   return (
     <div className="div-table">
-      <table className="table">
+      <table className="table" data-testid="table">
         <thead>
           <tr>
             <th>Nombre</th>
             <th>Imagen</th>
             <th>Ataque</th>
             <th>Defensa</th>
-            <th>Acciones</th>
+            <th className="td-acciones">Acciones</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody data-testid="table-body">
           {data.map((pokemon) => {
             return (
               <tr key={pokemon.id}>
@@ -31,7 +52,22 @@ export const Table = () => {
                 </td>
                 <td>{pokemon.attack}</td>
                 <td>{pokemon.defense}</td>
-                <td></td>
+                <td className="td-acciones">
+                  <button
+                    className="btn-table"
+                    title="Editar"
+                    onClick={() => onClickEditar(pokemon.id)}
+                  >
+                    <i className="fas fa-edit"></i>
+                  </button>
+                  <button
+                    className="btn-table"
+                    title="Eliminar"
+                    onClick={() => onClickDelete(pokemon.id)}
+                  >
+                    <i className="fas fa-trash-alt"></i>
+                  </button>
+                </td>
               </tr>
             );
           })}

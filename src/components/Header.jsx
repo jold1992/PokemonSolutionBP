@@ -1,25 +1,46 @@
 import React, { useState } from "react";
+import { animateScroll as scroll } from "react-scroll";
 
-export const Header = () => {
-  const [buscar, setBuscar] = useState("");
+import { useForm } from "../hooks/useForm";
+import { getPokemon } from "../services/getPokemon";
 
-  const handleInputChange = (e) => {
-    setBuscar(e.target.value);
+export const Header = ({ setTitle, setShowNewPanel, setData }) => {
+  const initialForm = {
+    buscar: "",
+  };
+
+  const [formValues, handleInputChange] = useForm(initialForm);
+
+  const { buscar } = formValues;
+
+  const onClickNew = () => {
+    setShowNewPanel(true);
+    setTitle("Nuevo Pokemon");
+    scroll.scrollToBottom();
+  };
+
+  const handleSearch = ({ target }) => {
+    handleInputChange({ target });
+    getPokemon(target.value, false).then((data) => {
+      setData(data);
+    });
   };
 
   return (
-    <div className="header">
+    <div className="header" data-testid="header">
       <h3>Listado de Pokemon</h3>
       <div className="inline-align">
         <div className="icon-wrapper">
           <input
+            autoComplete="off"
             id="buscar"
+            data-testid="input-search"
             name="buscar"
-            type="search"
+            type="text"
             className="input"
             placeholder="Buscar"
             value={buscar}
-            onChange={handleInputChange}
+            onChange={handleSearch}
           />
 
           <svg
@@ -37,7 +58,11 @@ export const Header = () => {
         </div>
 
         <div className="icon-wrapper">
-          <button className="btn-nuevo right-align">
+          <button
+            className="btn-nuevo right-align"
+            onClick={onClickNew}
+            data-testid="button-new"
+          >
             <i className="fa-solid fa-plus btn-icon"></i>
             Nuevo
           </button>
